@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- This meta tag ensures that the website renders correctly across different device sizes, enhancing mobile responsiveness. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Link to the external CSS stylesheet. Uncomment if you wish to customize or add styling. -->
+    <link rel="stylesheet" href="styles.css">  
+
+    <title>NutriPal Database Application</title> 
+</head>
+<body>
+    <!-- ===================================================================================== -->
+    <!-- Display the current status of the database connection. 
+         !!HERE TO HELP U DEBUGGING, NOT REQUIRED IN YOUR OWN PROJECT!!
+         -->
+    <h1>Database Connection Status: 
+        <!-- An in-line placeholder to display connection status. -->
+        <span id="dbStatus"> </span>
+        <!-- A loading GIF, will be hided once get the status. -->
+        <img id="loadingGif" class="loading-gif" src="loading_100px.gif" alt="Loading...">
+    </h1>
+
+    <!-- delete 1-->
+
+
+    <div id="jiyang-section">
+        <h2>Recipe Management (Jiyang)</h2>
+    
+        <!-- INSERT -->
+        <h3>Insert New Recipe</h3>
+        <p>Add a new recipe. The Dietitian ID must already exist in the system.</p>
+        <div>
+            Recipe ID:
+            <input type="text" id="insertRecipeId" placeholder="e.g. 11"> <br>
+            <small id="insertRecipeIdHelp" style="color: #666;">Required. Whole numbers only.</small>
+            <br><br>
+
+            Name:
+            <input type="text" id="insertRecipeName" placeholder="e.g. Salad Bowl" maxlength="20"> <br>
+            <small id="insertRecipeNameHelp" style="color: #666;">Required. Up to 20 characters.</small>
+            <br><br>
+
+            Cook Time (min):
+            <input type="text" id="insertCookTime" placeholder="e.g. 30"> <br>
+            <small id="insertCookTimeHelp" style="color: #666;">Optional. Whole number of minutes only.</small>
+            <br><br>
+
+            Spice Level:
+            <select id="insertSpiceLevel">
+                <option value="">-- Select --</option>
+                <option value="None">None</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+            </select> <br>
+            <small id="insertSpiceLevelHelp" style="color: #666;">Optional. Select a spice level.</small>
+            <br><br>
+
+            Price ($):
+            <input type="text" id="insertPrice" placeholder="e.g. 12.99"> <br>
+            <small id="insertPriceHelp" style="color: #666;">Optional. Valid number only, e.g. 12.99.</small>
+            <br><br>
+
+            Dietitian ID:
+            <input type="text" id="insertDietitianId" placeholder="e.g. 1 (must exist)"> <br>
+            <small id="insertDietitianIdHelp" style="color: #666;">Required. Whole numbers only. Must match an existing Dietitian ID.</small>
+            <br><br>
+
+            <button id="insertRecipeBtn" type="button">Insert Recipe</button>
+        </div>
+        <div id="insertRecipeMsg"></div>
+        <br><hr><br>
+    
+        <!-- UPDATE -->
+        <h3>Update Recipe</h3>
+        <p>Select a recipe to update. Leave fields blank to keep their current value.</p>
+        <div>
+            <button id="loadRecipesBtn">Load Recipes</button>
+            <div id="recipesTableContainer"></div>
+        </div>
+        <br>
+        <div id="updateRecipeForm" style="display:none;">
+            Updating Recipe ID: <span id="selectedRecipeId"></span> <br><br>
+            Name: <input type="text" id="updateRecipeName" placeholder="Leave blank to keep current" maxlength="20"> <br>
+            Cook Time (min): <input type="number" id="updateCookTime" placeholder="Leave blank to keep current"> <br>
+            Spice Level:
+            <select id="updateSpiceLevel">
+                <option value="">-- Leave blank to keep current --</option>
+                <option value="None">None</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+            </select> <br>
+            Price ($): <input type="number" id="updatePrice" placeholder="Leave blank to keep current" step="0.01"> <br>
+            Dietitian ID: <input type="number" id="updateDietitianId" placeholder="Leave blank to keep current"> <br><br>
+            <button id="updateRecipeBtn">Update Recipe</button>
+            <button id="cancelUpdateBtn">Cancel</button>
+        </div>
+        <div id="updateRecipeMsg"></div>
+    
+        <br><hr><br>
+    
+        <!-- SELECTION -->
+        <h3>Search Recipes</h3>
+        <p>Add conditions to filter recipes. Use AND/OR to combine multiple conditions.
+            The system will automatically group consecutive OR conditions together,
+            so searches behave more like normal filter tools.</p>
+        <div id="conditionsContainer">
+            <div class="condition-row" id="condition-0">
+                <select class="condition-field" onchange="updateValueInput(this)">
+                    <option value="name">Name</option>
+                    <option value="cookTime">Cook Time</option>
+                    <option value="spiceLevel">Spice Level</option>
+                    <option value="price">Price</option>
+                </select>
+                <select class="condition-operator" style="display:none;">
+                    <option value="=">=</option>
+                    <option value="<">&lt;</option>
+                    <option value=">">&gt;</option>
+                    <option value="<=">&lt;=</option>
+                    <option value=">=">&gt;=</option>
+                </select>
+                <span class="condition-value-container">
+                    <input type="text" class="condition-value" placeholder="Enter keyword (e.g. almond)">
+                </span>
+                <span class="and-or-buttons">
+                    <button type="button" onclick="addCondition('AND')">+ AND</button>
+                    <button type="button" onclick="addCondition('OR')">+ OR</button>
+                </span>
+            </div>
+        </div>
+        <br>
+        <button id="searchRecipesBtn">Search</button>
+        <button id="clearConditionsBtn">Clear All</button>
+        <br><br>
+        <div id="searchRecipeMsg"></div>
+        <div id="searchResultsContainer"></div>
+    
+    </div>
+
+    <br><hr><br>
+
+    <div id="dali-section">
+        <h2>Ingredient & Staff Statistics (Dali)</h2>
+        <h3>Ingredient Custom View</h3>
+        <p>Please select the columns you want to see. <strong>The numbers indicate your display order:</strong></p>
+        
+        <form id="projectionForm">
+            <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px; font-size: 15px; font-weight: 500; color: #555;">
+                <label style="cursor: pointer;">
+                    <input type="checkbox" class="proj-checkbox" value="name"> Name
+                    <span class="order-badge" data-val="name" style="display: none; background: #ff9800; color: white; border-radius: 50%; padding: 1px 7px; font-size: 12px; margin-left: 4px; font-weight: bold;"></span>
+                </label>
+                
+                <label style="cursor: pointer;">
+                    <input type="checkbox" class="proj-checkbox" value="calories"> Calories
+                    <span class="order-badge" data-val="calories" style="display: none; background: #ff9800; color: white; border-radius: 50%; padding: 1px 7px; font-size: 12px; margin-left: 4px; font-weight: bold;"></span>
+                </label>
+                
+                <label style="cursor: pointer;">
+                    <input type="checkbox" class="proj-checkbox" value="originRegion"> Origin Region
+                    <span class="order-badge" data-val="originRegion" style="display: none; background: #ff9800; color: white; border-radius: 50%; padding: 1px 7px; font-size: 12px; margin-left: 4px; font-weight: bold;"></span>
+                </label>
+                
+                <label style="cursor: pointer;">
+                    <input type="checkbox" class="proj-checkbox" value="allergenFlag"> Allergen Info
+                    <span class="order-badge" data-val="allergenFlag" style="display: none; background: #ff9800; color: white; border-radius: 50%; padding: 1px 7px; font-size: 12px; margin-left: 4px; font-weight: bold;"></span>
+                </label>
+            </div>
+            
+            <button type="submit">View Selected Columns</button>
+        </form>
+
+        <div id="projectionMsg" style="color: red; margin-top: 10px;"></div>
+
+        <br>
+        
+        <table id="projectionTable">
+            <thead id="projectionTableHead"></thead>
+            <tbody id="projectionTableBody"></tbody>
+        </table>
+        <br><hr style="border-top: 1px dashed #ccc;"><br>
+
+        <h3>Remove Recipe (Delete)</h3>
+        <p>Enter the Recipe ID to remove it from the system.</p>
+        
+        <p style="color: #0056b3; font-size: 0.9em; margin-bottom: 10px;">
+            The highest Recipe ID currently in the database is: <strong id="maxRecipeIdDisplay">Loading...</strong>
+        </p>
+
+        <form id="deleteRecipeForm">
+            <input type="number" id="deleteRecipeId" placeholder="Recipe ID" required min="1"
+                   style="padding: 5px; width: 150px;">
+            <button type="submit" style="background-color: #ff4d4d; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px;">
+                Delete Recipe
+            </button>
+        </form>
+        <div id="deleteResultMsg" style="margin-top: 10px; font-weight: bold;"></div>
+
+
+        <br><hr style="border-top: 1px dashed #ccc;"><br>
+
+        <h3>Dietitian Contributions (Aggregation)</h3>
+        <p>Click the button below to see how many recipes each dietitian has contributed.</p>
+        
+        <button id="countDietitianRecipesBtn" >
+            View Dietitian Contributions
+        </button>
+        
+        <div id="dietitianCountMsg" style="margin-top: 10px; font-weight: bold;"></div>
+        
+        <table id="dietitianCountTable" style="margin-top: 15px; border-collapse: collapse; width: 50%; display: none;" border="1">
+            <thead>
+                <tr style="background-color: #f2f2f2;">
+                    <th style="padding: 8px;">Dietitian ID</th>
+                    <th style="padding: 8px;">Dietitian Name</th>
+                    <th style="padding: 8px;">Total Recipes</th>
+                </tr>
+            </thead>
+            <tbody id="dietitianCountTableBody">
+                <!-- Data will be populated here by JS -->
+            </tbody>
+        </table>
+
+        <br><hr style="border-top: 1px dashed #ccc;"><br>
+
+        <h3>Quick Meal Expert (Nested Aggregation with GROUP BY)</h3>
+        <p>Find the dietitian whose recipes have the lowest average cook time.</p>
+        
+        <button id="findFastestDietitianBtn">
+            Find Quick Meal Expert
+        </button>
+        
+        <div id="fastestDietitianMsg" style="margin-top: 10px;"></div>
+        
+        <div id="fastestDietitianResult" style="margin-top: 15px; display: none;">
+        </div>
+    </div>
+
+    <br><hr><br> 
+
+    <div id="esther-section">
+        <h2>Advanced Nutrition Analysis (Esther)</h2> <!-- code insert beginning -->
+
+        <h3>Find Ingredients by Nutrient</h3>
+        <form id="searchByNutrient">
+            Nutrient: 
+            <input type="text" id="nutrientInput" placeholder="e.g. Vitamin C" required>
+            <br><br>
+            <button type="submit">Search</button>
+        </form>
+
+        <table id="nutrientResultTable" border="1">
+            <thead>
+                <tr>
+                    <th>Ingredient Name</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div id="nutrientResultMsg"></div> <!-- code insert ending -->
+
+        <br><hr><br> <!-- ========================================================================= -->
+
+        <h3>High Nutrient Ingredients (Aggregation)</h3> <!-- code insert beginning query 9 -->
+
+        <p>
+            This feature allows you to find ingredients that contain a high amount of a specific nutrient. 
+            Enter a nutrient name (e.g., Vitamin C) and a minimum threshold, and the system will display 
+            ingredients whose total nutrient content exceeds the given value.
+        </p>
+
+        <form id="aggregationSearch">
+            Nutrient: <input type="text" id="aggNutrient" placeholder="e.g. Vitamin C" required><br><br> 
+            Min Amount: <input type="number" id="aggThreshold" placeholder="e.g. 1" required><br><br>
+            <button type="submit">Search</button>
+        </form>
+
+        <table id="aggResultTable" border="1">
+            <thead>
+                <tr>
+                    <th>Ingredient</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div id="aggMsg"></div>  <!-- code insert ending query 9-->
+    
+        <br><hr><br> <!-- ========================================================================= -->
+
+        <h3>Common Ingredients in All Beverages (Division)</h3>  <!-- code insert beginning query 10 -->
+        <p>Click the button below to find ingredients that appear in every beverage recipe.</p>
+
+        <form id="divisionQueryForm">
+            <button type="submit">Find Ingredients</button> 
+        </form>
+
+        <table id="divisionResultTable" border="1">
+            <thead>
+                <tr>
+                    <th>Ingredient Name</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div id="divisionMsg"></div>  <!-- code insert ending query 10-->
+         </div>
+    <!-- ===================================================================================== -->
+    <!-- External JavaScript file that contains the functionality/logic for the operations above. -->
+    <script src="scripts.js"></script>
+    
+</body>
+</html>
